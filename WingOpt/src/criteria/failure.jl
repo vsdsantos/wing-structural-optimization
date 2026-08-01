@@ -16,8 +16,7 @@ Maximum-stress failure criterion. Returns the minimum margin of safety
 `mat`   – MaterialProperties  
 `opt`   – \"axial\" or \"trans\" (fibre direction)
 """
-function max_tension_criteria(sigma::Matrix{Float64},
-                               mat::MaterialProperties, opt::String)
+function max_tension_criteria(sigma::Matrix{Float64}, mat::MaterialProperties, opt::String)
     error("Not implemented")
 end
 
@@ -28,8 +27,7 @@ Tsai-Wu polynomial failure criterion.
 Returns the margin of safety: sf - 1, where sf is the safety factor
 at failure (positive = safe, negative = failed).
 """
-function tsai_wu_criteria(sigma::Matrix{Float64},
-                           mat::MaterialProperties, opt::String)
+function tsai_wu_criteria(sigma::Matrix{Float64}, mat::MaterialProperties, opt::String)
     error("Not implemented")
 end
 

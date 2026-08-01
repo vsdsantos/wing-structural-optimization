@@ -44,11 +44,11 @@ end
 
 """Optimization run configuration."""
 Base.@kwdef mutable struct RunConfig
-    section_type::String   = "reinforced_box"
+    section_type::String = "reinforced_box"
     constraint_type::String = "ss"
     constraint_gap::Float64 = 0.1
     constraint_angle::Float64 = 0.0
-    foil_name::String       = "s1223"
+    foil_name::String = "s1223"
 end
 
 # ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ Parsed airfoil data (replaces the .mat cache written by parse_foil.m).
 `ex_lin` and `in_lin` are Interpolations.LinearInterpolation objects mapping
 fractional chord x ∈ [0,1] to the y-coordinate on the upper/lower surface.
 """
-struct FoilData{IU, IL}
+struct FoilData{IU,IL}
     ex_lin::IU              # upper-surface interpolant  y_upper(x)
     in_lin::IL              # lower-surface interpolant  y_lower(x)
     ext::Matrix{Float64}    # upper surface raw points (x increasing)

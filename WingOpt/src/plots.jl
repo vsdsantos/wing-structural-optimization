@@ -12,7 +12,7 @@ All functions return the Plots.jl plot object so the caller can save/display.
 Plot shear force, bending moment, torsional moment, and axial force
 diagrams for one wing half.
 """
-function plot_internal_loads(hl::HalfLoads; title_prefix::String="Right wing")
+function plot_internal_loads(hl::HalfLoads; title_prefix::String = "Right wing")
     error("Not implemented")
 end
 
@@ -21,9 +21,11 @@ end
 
 Plot bending stiffness EI and torsional stiffness GJ vs semi-span.
 """
-function plot_stiffness(stations::Vector{Station},
-                         props::Vector{SectionProperties},
-                         mat::MaterialProperties)
+function plot_stiffness(
+    stations::Vector{Station},
+    props::Vector{SectionProperties},
+    mat::MaterialProperties,
+)
     error("Not implemented")
 end
 
@@ -32,7 +34,7 @@ end
 
 Draw the cross-section outline of a reinforced box section.
 """
-function plot_box_section(prop::SectionProperties; title::String="Box section")
+function plot_box_section(prop::SectionProperties; title::String = "Box section")
     error("Not implemented")
 end
 

@@ -32,9 +32,14 @@ Torsion angle for a single-cell thin-walled section (Bredt–Batho).
 
 Returns `(phi_total, dphi_dx)` where `dphi_dx` is a function `x → dφ/dx`.
 """
-function ang_torcao_parede_fina(torque::Float64, thick_vec::AbstractVector,
-                                  s_vec::AbstractVector, Am::Float64,
-                                  G::Float64, lim::AbstractVector)
+function ang_torcao_parede_fina(
+    torque::Float64,
+    thick_vec::AbstractVector,
+    s_vec::AbstractVector,
+    Am::Float64,
+    G::Float64,
+    lim::AbstractVector,
+)
     error("Not implemented")
 end
 
@@ -55,9 +60,13 @@ Compute shear flows in a bi-cellular thin-walled section.
 
 Returns a 3-element vector of shear flows.
 """
-function bicelular(torque_vec::AbstractVector, area_vec::AbstractVector,
-                   rel_q::Float64,
-                   t_cells::AbstractVector, s_cells::AbstractVector)
+function bicelular(
+    torque_vec::AbstractVector,
+    area_vec::AbstractVector,
+    rel_q::Float64,
+    t_cells::AbstractVector,
+    s_cells::AbstractVector,
+)
     error("Not implemented")
 end
 
@@ -75,9 +84,12 @@ Cumulative torsion angle along the span.
 - `Mt`       – torsional moment at each station (N·m)
 - `mat`      – MaterialProperties (uses `.G`)
 """
-function wing_torsion(stations::Vector{Station},
-                      props::Vector{SectionProperties},
-                      Mt::AbstractVector, mat::MaterialProperties)
+function wing_torsion(
+    stations::Vector{Station},
+    props::Vector{SectionProperties},
+    Mt::AbstractVector,
+    mat::MaterialProperties,
+)
     error("Not implemented")
 end
 
@@ -92,8 +104,11 @@ Finite-difference beam bending displacement for both wing halves.
 
 Returns `(R = right_deflection, L = left_deflection)` as vectors over `stations`.
 """
-function wing_displacement(stations::Vector{Station},
-                            props::Vector{SectionProperties},
-                            load::InternalLoads, mat::MaterialProperties)
+function wing_displacement(
+    stations::Vector{Station},
+    props::Vector{SectionProperties},
+    load::InternalLoads,
+    mat::MaterialProperties,
+)
     error("Not implemented")
 end

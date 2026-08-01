@@ -14,7 +14,7 @@ Key differences from the Matlab version:
 Generate a simple elliptic lift distribution as an example aerodynamic load.
 In production use, replace with actual VLM/CFD loads.
 """
-function example_aero_loads(wing::WingGeometry; n_panels::Int=20)
+function example_aero_loads(wing::WingGeometry; n_panels::Int = 20)
     error("Not implemented")
 end
 
@@ -45,10 +45,12 @@ Evaluate the fitness for the optimisation variable vector `X`.
 Returns `(raw_fit, data::FitData)` where raw_fit is the scalar objective
 (to be minimised; more negative = better structure per unit mass).
 """
-function fit_function(X::AbstractVector,
-                       config::RunConfig,
-                       wing::WingGeometry,
-                       foil::FoilData,
-                       loads::Vector{AeroLoad})
+function fit_function(
+    X::AbstractVector,
+    config::RunConfig,
+    wing::WingGeometry,
+    foil::FoilData,
+    loads::Vector{AeroLoad},
+)
     error("Not implemented")
 end

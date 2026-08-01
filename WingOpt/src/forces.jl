@@ -23,9 +23,11 @@ Arguments:
 
 Returns InternalLoads with `.L` (left) and `.R` (right) HalfLoads.
 """
-function internal_loads_SS(load::AeroLoad,
-                            section_props::Vector{SectionProperties},
-                            wing::WingGeometry)
+function internal_loads_SS(
+    load::AeroLoad,
+    section_props::Vector{SectionProperties},
+    wing::WingGeometry,
+)
     error("Not implemented")
 end
 
@@ -40,8 +42,10 @@ end
 errors and was a work-in-progress biplane model.
 """
 function internal_loads_FX(::AeroLoad, ::Vector{SectionProperties}, ::WingGeometry)
-    error("internal_loads_FX is not yet implemented. " *
-          "Use constraint_type = \"ss\" for simply-supported analysis.")
+    error(
+        "internal_loads_FX is not yet implemented. " *
+        "Use constraint_type = \"ss\" for simply-supported analysis.",
+    )
 end
 
 # ---------------------------------------------------------------------------
@@ -51,9 +55,11 @@ end
 """
     compute_internal_loads(load, section_props, wing, constraint_type) -> InternalLoads
 """
-function compute_internal_loads(load::AeroLoad,
-                                 section_props::Vector{SectionProperties},
-                                 wing::WingGeometry,
-                                 constraint_type::String)
+function compute_internal_loads(
+    load::AeroLoad,
+    section_props::Vector{SectionProperties},
+    wing::WingGeometry,
+    constraint_type::String,
+)
     error("Not implemented")
 end

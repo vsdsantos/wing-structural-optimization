@@ -14,8 +14,10 @@ return one `Station` per position.
 `geometry` – StructuredGeometry (spar parametrisation, one value per span break)
 `s`        – vector of desired spanwise positions (m, right semi-span)
 """
-function generate_wing_stations(wing::WingGeometry,
-                                 geometry::StructuredGeometry,
-                                 s::AbstractVector{<:Real})
+function generate_wing_stations(
+    wing::WingGeometry,
+    geometry::StructuredGeometry,
+    s::AbstractVector{<:Real},
+)
     error("Not implemented")
 end

@@ -56,7 +56,7 @@ end
 
 Circular tube inscribed in the airfoil section at the spar limits.
 """
-function O_section(station::Station, foil::FoilData; offset::Float64=0.0)
+function O_section(station::Station, foil::FoilData; offset::Float64 = 0.0)
     error("Not implemented")
 end
 

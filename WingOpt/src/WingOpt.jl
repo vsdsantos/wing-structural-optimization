@@ -76,52 +76,92 @@ include("main.jl")
 # ── Public API exports ────────────────────────────────────────────────────────
 export
     # Types
-    MaterialProperties, WingGeometry, RunConfig,
-    FoilData, FoilGeometry, Station, SectionProperties,
-    StructuredGeometry, AeroLoad, HalfLoads, InternalLoads,
-    OptResult, FitData,
+    MaterialProperties,
+    WingGeometry,
+    RunConfig,
+    FoilData,
+    FoilGeometry,
+    Station,
+    SectionProperties,
+    StructuredGeometry,
+    AeroLoad,
+    HalfLoads,
+    InternalLoads,
+    OptResult,
+    FitData,
 
     # Material
     material_properties,
 
     # Geometry
-    translate_inertia_tensor, rotate_inertia_tensor, principal_inertia_tensor,
-    multielement_centroid, area_inertia_tensor, first_moment_of_area, section_centroid,
-    parse_foil, foil_properties,
+    translate_inertia_tensor,
+    rotate_inertia_tensor,
+    principal_inertia_tensor,
+    multielement_centroid,
+    area_inertia_tensor,
+    first_moment_of_area,
+    section_centroid,
+    parse_foil,
+    foil_properties,
     generate_wing_stations,
 
     # Torsion / displacement
-    integral_linha_media, ang_torcao_parede_fina, bicelular,
-    wing_torsion, wing_displacement,
+    integral_linha_media,
+    ang_torcao_parede_fina,
+    bicelular,
+    wing_torsion,
+    wing_displacement,
 
     # Sections
-    reinforced_box_section, box_section, D_section, O_section, foil_shaped_section,
+    reinforced_box_section,
+    box_section,
+    D_section,
+    O_section,
+    foil_shaped_section,
     compute_section,
 
     # Parametrics
     reinforced_box_parametric_geometry,
 
     # Forces
-    internal_loads_SS, compute_internal_loads,
+    internal_loads_SS,
+    compute_internal_loads,
 
     # Failure criteria
-    max_tension_criteria, tsai_wu_criteria, tsai_hill_criteria,
+    max_tension_criteria,
+    tsai_wu_criteria,
+    tsai_hill_criteria,
 
     # Structural criteria
-    safety_margin, beam_mass, report_45,
+    safety_margin,
+    beam_mass,
+    report_45,
 
     # Fitness
-    weight_function, fit_function, example_aero_loads,
+    weight_function,
+    fit_function,
+    example_aero_loads,
 
     # Config
-    build_run_config, build_wing_geometry,
+    build_run_config,
+    build_wing_geometry,
 
     # Optimisers
-    run_ga, run_pso, run_sa, run_ps, run_optimizer,
-    DEFAULT_LB, DEFAULT_UB, AINEQ, BINEQ,
+    run_ga,
+    run_pso,
+    run_sa,
+    run_ps,
+    run_optimizer,
+    DEFAULT_LB,
+    DEFAULT_UB,
+    AINEQ,
+    BINEQ,
 
     # Plots
-    plot_internal_loads, plot_stiffness, plot_box_section, plot_spar_topview,
+    plot_internal_loads,
+    plot_stiffness,
+    plot_box_section,
+    plot_spar_topview,
 
     # Entry point
     run_optimization

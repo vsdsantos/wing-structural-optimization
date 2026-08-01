@@ -11,10 +11,6 @@ on:
       - "WingOpt/**"
       - ".github/workflows/ci.yml"
 
-defaults:
-  run:
-    working-directory: WingOpt
-
 jobs:
   lint:
     name: Lint (JuliaFormatter)
@@ -27,14 +23,16 @@ jobs:
           version: "1"
 
       - name: Check formatting
+        working-directory: WingOpt
         run: |
-          julia --project=@. -e '
-            using Pkg
+          julia --startup-file=no -e '
+            import Pkg
+            Pkg.activate(mktempdir())
             Pkg.add("JuliaFormatter")
             using JuliaFormatter
             ok = format(".", overwrite=false, verbose=true)
             if !ok
-              @error "Some files are not formatted. Run `julia -e '\''using JuliaFormatter; format(\".\")'\'' inside WingOpt/ to fix."
+              @error "Some files are not formatted. Run `using JuliaFormatter; format(\".\")` inside WingOpt/ to fix."
               exit(1)
             end
           '
@@ -58,6 +56,10 @@ jobs:
 
       - name: Build package
         uses: julia-actions/julia-buildpkg@v1
+        with:
+          project: WingOpt
 
       - name: Run tests
         uses: julia-actions/julia-runtest@v1
+        with:
+          project: WingOpt

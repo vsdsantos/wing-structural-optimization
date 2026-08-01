@@ -17,7 +17,7 @@ the upper (extrados) and lower (intrados) surfaces.
 The file is expected to live at `foil_dir/foil_name.dat`.
 The first non-numeric line (title) is skipped automatically.
 """
-function parse_foil(foil_name::String; foil_dir::String="foils")
+function parse_foil(foil_name::String; foil_dir::String = "foils")
     error("Not implemented")
 end
 
@@ -36,8 +36,12 @@ Arguments:
 Returns a FoilGeometry with upper/lower surface arrays in the quarter-chord
 coordinate system (x = 0 at c/4, positive toward TE; y = 0 at camber line).
 """
-function foil_properties(chord::Float64, scale_thick::Float64,
-                          limits::AbstractVector, offset::AbstractVector,
-                          foil::FoilData)
+function foil_properties(
+    chord::Float64,
+    scale_thick::Float64,
+    limits::AbstractVector,
+    offset::AbstractVector,
+    foil::FoilData,
+)
     error("Not implemented")
 end

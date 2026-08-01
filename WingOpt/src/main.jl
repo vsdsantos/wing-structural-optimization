@@ -40,12 +40,14 @@ Constraints:
     X[1] + X[2] ≤ 0.75   (tip spar must fit within chord)
     X[1] + X[3] ≤ 0.75   (root spar must fit within chord)
 """
-function run_optimization(run_case::Int=1;
-                           optimizer::Symbol=:ga,
-                           parallel::Bool=false,
-                           foil_dir::String="foils",
-                           loads::Union{Nothing,Vector{AeroLoad}}=nothing,
-                           n_panels::Int=20,
-                           kwargs...)
+function run_optimization(
+    run_case::Int = 1;
+    optimizer::Symbol = :ga,
+    parallel::Bool = false,
+    foil_dir::String = "foils",
+    loads::Union{Nothing,Vector{AeroLoad}} = nothing,
+    n_panels::Int = 20,
+    kwargs...,
+)
     error("Not implemented")
 end
