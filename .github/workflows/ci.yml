@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "WingOpt/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "WingOpt/**"
+      - ".github/workflows/ci.yml"
+
+defaults:
+  run:
+    working-directory: WingOpt
+
+jobs:
+  lint:
+    name: Lint (JuliaFormatter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1"
+
+      - name: Check formatting
+        run: |
+          julia --project=@. -e '
+            using Pkg
+            Pkg.add("JuliaFormatter")
+            using JuliaFormatter
+            ok = format(".", overwrite=false, verbose=true)
+            if !ok
+              @error "Some files are not formatted. Run `julia -e '\''using JuliaFormatter; format(\".\")'\'' inside WingOpt/ to fix."
+              exit(1)
+            end
+          '
+
+  test:
+    name: Tests — Julia ${{ matrix.julia-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ["1.10", "1"]   # 1.10 = current LTS, "1" = latest stable
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia-version }}
+
+      - uses: julia-actions/cache@v2
+
+      - name: Build package
+        uses: julia-actions/julia-buildpkg@v1
+
+      - name: Run tests
+        uses: julia-actions/julia-runtest@v1
