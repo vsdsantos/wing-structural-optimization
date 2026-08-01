@@ -5,9 +5,6 @@ or:        cd WingOpt && julia --project -e 'using Pkg; Pkg.test()'
 """
 
 using Test
-import Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
-
 using WingOpt
 
 @testset "WingOpt" begin
