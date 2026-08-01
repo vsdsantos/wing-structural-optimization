@@ -47,30 +47,5 @@ function run_optimization(run_case::Int=1;
                            loads::Union{Nothing,Vector{AeroLoad}}=nothing,
                            n_panels::Int=20,
                            kwargs...)
-    # 1. Configuration
-    cfg  = build_run_config(run_case)
-    wing = build_wing_geometry(cfg)
-
-    # 2. Airfoil
-    foil = parse_foil(cfg.foil_name; foil_dir=foil_dir)
-
-    # 3. Aerodynamic loads
-    aero_loads = (loads === nothing) ? example_aero_loads(wing; n_panels=n_panels) : loads
-
-    # 4. Fitness closure
-    fitness = X -> fit_function(X, cfg, wing, foil, aero_loads)
-
-    # 5. Run optimizer
-    result = run_optimizer(optimizer, fitness; parallel=parallel, kwargs...)
-
-    # 6. Evaluate best design
-    _, data = fit_function(result.x, cfg, wing, foil, aero_loads)
-
-    println("Optimization complete.")
-    println("  Best fitness : $(result.fval)")
-    println("  Best X       : $(result.x)")
-    println("  Min safety margin : $(data.min_ms)")
-    println("  Spar mass         : $(data.mass) kg")
-
-    return result, data
+    error("Not implemented")
 end
