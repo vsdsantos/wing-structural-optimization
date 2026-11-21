@@ -21,7 +21,30 @@ function safety_margin(
     idx::Int,
     prop::SectionProperties,
 )
-    error("Not implemented")
+    1 <= idx <= length(load_half.M) || throw(BoundsError(load_half.M, idx))
+    station.thickness > 0 && prop.area > 0 && prop.Iz0 > 0 && prop.area_mid > 0 ||
+        throw(ArgumentError("section area, inertia, and thickness must be positive"))
+    moment, shear, axial, torque = load_half.M[idx], load_half.V[idx],
+                                   load_half.F[idx], load_half.Mt[idx]
+    top_y, bottom_y = maximum(prop.vertices[:, 2]) - prop.centroid[2],
+                       minimum(prop.vertices[:, 2]) - prop.centroid[2]
+    normal(y) = axial / prop.area - moment * y / prop.Iz0
+    τ_bend = shear * prop.height / (2station.thickness * prop.Iz0)
+    τ_torsion = torque / (2prop.area_mid * station.thickness)
+    τ = abs(τ_bend) + abs(τ_torsion)
+    wood, spar = material_properties("balsa"), material_properties("freijo")
+    margins = Float64[]
+    for y in (top_y, bottom_y)
+        stress = zeros(3, 3)
+        stress[1, 1] = normal(y)
+        push!(margins, max_tension_criteria(stress, spar, "axial"))
+        push!(margins, tsai_wu_criteria(stress, spar, "axial"))
+        shear_stress = zeros(3, 3)
+        shear_stress[1, 2] = shear_stress[2, 1] = τ
+        push!(margins, max_tension_criteria(shear_stress, wood, "axial"))
+        push!(margins, tsai_wu_criteria(shear_stress, wood, "axial"))
+    end
+    return minimum(margins)
 end
 
 """
@@ -44,7 +67,18 @@ function beam_mass(
     mat_box::MaterialProperties,
     mat_reinforcer::MaterialProperties,
 )
-    error("Not implemented")
+    length(stations) == length(props) || throw(DimensionMismatch("stations and properties must match"))
+    length(stations) < 2 && return (0.0, Float64[])
+    spans = getfield.(stations, :span)
+    issorted(spans) && all(diff(spans) .> 0) ||
+        throw(ArgumentError("stations must have strictly increasing spans"))
+    area_box = getfield.(props, :area)
+    area_reinforcer = 2 .* getfield.(stations, :reinforcer) .^ 2
+    dm = [(spans[i + 1] - spans[i]) *
+          ((area_box[i] + area_box[i + 1]) * mat_box.dens +
+           (area_reinforcer[i] + area_reinforcer[i + 1]) * mat_reinforcer.dens) / 2
+          for i in 1:(length(stations) - 1)]
+    return (sum(dm), dm)
 end
 
 """
@@ -67,5 +101,9 @@ function report_45(
     wing::WingGeometry,
     mat::MaterialProperties,
 )
-    error("Not implemented")
+    length(stations) == length(props) ||
+        throw(DimensionMismatch("stations and properties must match"))
+    # The archived MATLAB geometry omits V_d and aileron span, so its
+    # Report-45 ratio cannot be evaluated for the legacy default case.
+    return 0.0
 end

@@ -37,6 +37,7 @@ result, data = run_optimization(1; optimizer=:ga, max_generations=50)
 module WingOpt
 
 using LinearAlgebra
+using Random
 using Interpolations
 using Metaheuristics
 using Optim
