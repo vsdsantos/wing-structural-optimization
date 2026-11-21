@@ -63,3 +63,6 @@ jobs:
         uses: julia-actions/julia-runtest@v1
         with:
           project: WingOpt
+
+      - name: Run smoke example
+        run: julia --project=WingOpt --startup-file=no WingOpt/examples/smoke_test.jl
