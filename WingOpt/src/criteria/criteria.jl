@@ -21,7 +21,51 @@ function safety_margin(
     idx::Int,
     prop::SectionProperties,
 )
-    error("Not implemented")
+    1 <= idx <= length(load_half.M) || throw(BoundsError(load_half.M, idx))
+    station.thickness > 0 && prop.area > 0 && prop.Iz0 > 0 && prop.area_mid > 0 ||
+        throw(ArgumentError("section area, inertia, and thickness must be positive"))
+    moment, shear, axial, torque =
+        load_half.M[idx], load_half.V[idx], load_half.F[idx], load_half.Mt[idx]
+    top_y, bottom_y = maximum(prop.vertices[:, 2]) - prop.centroid[2],
+    minimum(prop.vertices[:, 2]) - prop.centroid[2]
+    box, spar = material_properties("balsa"), material_properties("freijo")
+    reinforcement_area = station.reinforcer^2
+    reinforcement_y = [prop.mc_centroid[2], prop.mt_centroid[2]] .- prop.centroid[2]
+    EA_box = box.axial_E * prop.area
+    EA_reinforcement = spar.axial_E * reinforcement_area
+    stiffness = hcat(
+        [EA_box + 2EA_reinforcement, EA_reinforcement * sum(reinforcement_y)],
+        [
+            EA_reinforcement * sum(reinforcement_y),
+            box.axial_E * prop.I[1, 1] + EA_reinforcement * sum(reinforcement_y .^ 2),
+        ],
+    )
+    strain_curvature = stiffness \ [axial, -moment]
+    normal_box(y) = box.axial_E * (strain_curvature[1] + strain_curvature[2] * y)
+    normal_reinforcement(y) = spar.axial_E * (strain_curvature[1] + strain_curvature[2] * y)
+    τ_bend = shear * prop.height / (2station.thickness * prop.Iz0)
+    τ_torsion = torque / (2prop.area_mid * station.thickness)
+    τ = abs(τ_bend) + abs(τ_torsion)
+    margins = Float64[]
+    for y in (top_y, bottom_y)
+        stress = zeros(3, 3)
+        stress[1, 1] = normal_box(y)
+        push!(margins, max_tension_criteria(stress, box, "axial"))
+        push!(margins, tsai_wu_criteria(stress, box, "axial"))
+        shear_stress = zeros(3, 3)
+        shear_stress[1, 2] = shear_stress[2, 1] = τ
+        push!(margins, max_tension_criteria(shear_stress, box, "axial"))
+        push!(margins, tsai_wu_criteria(shear_stress, box, "axial"))
+    end
+    if reinforcement_area > 0
+        for y in reinforcement_y
+            stress = zeros(3, 3)
+            stress[1, 1] = normal_reinforcement(y)
+            push!(margins, max_tension_criteria(stress, spar, "axial"))
+            push!(margins, tsai_wu_criteria(stress, spar, "axial"))
+        end
+    end
+    return minimum(margins)
 end
 
 """
@@ -44,7 +88,26 @@ function beam_mass(
     mat_box::MaterialProperties,
     mat_reinforcer::MaterialProperties,
 )
-    error("Not implemented")
+    length(stations) == length(props) ||
+        throw(DimensionMismatch("stations and properties must match"))
+    isempty(stations) && return (0.0, Float64[])
+    spans = getfield.(stations, :span)
+    issorted(spans) && all(diff(spans) .> 0) ||
+        throw(ArgumentError("stations must have strictly increasing spans"))
+    area_box = getfield.(props, :area)
+    area_reinforcer = 2 .* getfield.(stations, :reinforcer) .^ 2
+    mass_per_length = area_box .* mat_box.dens .+ area_reinforcer .* mat_reinforcer.dens
+    if length(stations) == 1
+        dm = [2spans[1] * mass_per_length[1]]
+    else
+        edges = vcat(
+            max(0.0, spans[1] - (spans[2] - spans[1]) / 2),
+            (spans[1:(end-1)] .+ spans[2:end]) ./ 2,
+            spans[end] + (spans[end] - spans[end-1]) / 2,
+        )
+        dm = diff(edges) .* mass_per_length
+    end
+    return (sum(dm), dm)
 end
 
 """
@@ -59,7 +122,8 @@ cutout span outward), Cᵢ is the local chord in feet, and Δsᵢ is the
 span increment in feet.
 
 The criterion is F ≤ 200/Vd² where Vd is the design dive speed in mph.
-Returns F / (200/Vd²): values < 1 pass, values ≥ 1 fail.
+Returns F / (200/Vd²): values < 1 pass, values ≥ 1 fail. Returns `Inf`
+when the legacy wing configuration lacks the inputs needed to evaluate it.
 """
 function report_45(
     stations::Vector{Station},
@@ -67,5 +131,9 @@ function report_45(
     wing::WingGeometry,
     mat::MaterialProperties,
 )
-    error("Not implemented")
+    length(stations) == length(props) ||
+        throw(DimensionMismatch("stations and properties must match"))
+    # The archived MATLAB geometry omits V_d and aileron span, so its
+    # Report-45 ratio cannot be evaluated for the legacy default case.
+    return Inf
 end
