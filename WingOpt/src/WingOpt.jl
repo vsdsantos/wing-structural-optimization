@@ -90,6 +90,11 @@ export
     OptResult,
     FitData,
 
+    # Numerical utilities
+    trapz,
+    cumtrapz,
+    quadratic_roots,
+
     # Material
     material_properties,
 

@@ -57,7 +57,7 @@ end
 
 """
 Parsed airfoil data (replaces the .mat cache written by parse_foil.m).
-`ex_lin` and `in_lin` are Interpolations.LinearInterpolation objects mapping
+`ex_lin` and `in_lin` are linear interpolants mapping
 fractional chord x ∈ [0,1] to the y-coordinate on the upper/lower surface.
 """
 struct FoilData{IU,IL}
