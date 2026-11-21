@@ -18,8 +18,13 @@ function example_aero_loads(wing::WingGeometry; n_panels::Int = 20)
     n_panels >= 2 || throw(ArgumentError("n_panels must be at least two"))
     wing.full_span > 0 || throw(ArgumentError("wing span must be positive"))
     step = wing.full_span / n_panels
-    x = collect(range(-wing.full_span / 2 + step / 2,
-                      wing.full_span / 2 - step / 2; length = n_panels))
+    x = collect(
+        range(
+            -wing.full_span / 2 + step / 2,
+            wing.full_span / 2 - step / 2;
+            length = n_panels,
+        ),
+    )
     shape = sqrt.(max.(0.0, 1 .- (2 .* x ./ wing.full_span) .^ 2))
     q_peak = 4 * 100.0 / (pi * wing.full_span)
     lift = q_peak .* shape
@@ -75,21 +80,45 @@ function fit_function(
     geometry = reinforced_box_parametric_geometry(X, wing)
     span = sort(unique(reduce(vcat, (load.x[load.x .>= 0] for load in loads))))
     isempty(span) && throw(ArgumentError("loads must include right-wing spanwise stations"))
-    span[end] <= wing.full_span / 2 || throw(ArgumentError("load stations exceed the semi-span"))
+    span[end] <= wing.full_span / 2 ||
+        throw(ArgumentError("load stations exceed the semi-span"))
     stations = generate_wing_stations(wing, geometry, span)
-    section_props = [compute_section(station, foil, config.section_type) for station in stations]
+    section_props =
+        [compute_section(station, foil, config.section_type) for station in stations]
     box_material = material_properties("balsa")
     reinforcer_material = material_properties("freijo")
-    mass_half, dm_half = beam_mass(stations, section_props, box_material, reinforcer_material)
+    mass_half, dm_half =
+        beam_mass(stations, section_props, box_material, reinforcer_material)
     mass = 2mass_half
-    internal_loads = [compute_internal_loads(load, section_props, wing, config.constraint_type)
-                      for load in loads]
-    ms = [minimum(vcat(
-        [safety_margin(stations[i], case.R, i, section_props[i]) for i in eachindex(stations)],
-        [safety_margin(stations[i], case.L, i, section_props[i]) for i in eachindex(stations)],
-    )) for case in internal_loads]
+    internal_loads = [
+        compute_internal_loads(load, section_props, wing, config.constraint_type) for
+        load in loads
+    ]
+    ms = [
+        minimum(
+            vcat(
+                [
+                    safety_margin(stations[i], case.R, i, section_props[i]) for
+                    i in eachindex(stations)
+                ],
+                [
+                    safety_margin(stations[i], case.L, i, section_props[i]) for
+                    i in eachindex(stations)
+                ],
+            ),
+        ) for case in internal_loads
+    ]
     min_ms = minimum(ms)
     report = report_45(stations, section_props, wing, box_material)
-    data = FitData(stations, section_props, wing, mass, 2 .* dm_half, min_ms, ms, internal_loads)
+    data = FitData(
+        stations,
+        section_props,
+        wing,
+        mass,
+        2 .* dm_half,
+        min_ms,
+        ms,
+        internal_loads,
+    )
     return weight_function(mass, min_ms, report), data
 end

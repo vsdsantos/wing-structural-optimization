@@ -38,10 +38,12 @@ function _box_section_properties(station::Station, foil::FoilData)
         throw(ArgumentError("section dimensions must exceed wall thickness"))
     area_flange = width * thickness
     area_web = thickness * web_length
-    centers = [A[1] + width / 2 A[2] - thickness / 2;
-               C[1] + width / 2 C[2] + thickness / 2;
-               C[1] + thickness / 2 C[2] + thickness + web_length / 2;
-               D[1] - thickness / 2 C[2] + thickness + web_length / 2]
+    centers = [
+        A[1] + width / 2 A[2] - thickness / 2;
+        C[1] + width / 2 C[2] + thickness / 2;
+        C[1] + thickness / 2 C[2] + thickness + web_length / 2;
+        D[1] - thickness / 2 C[2] + thickness + web_length / 2
+    ]
     areas = [area_flange, area_flange, area_web, area_web]
     centroid = multielement_centroid(centers, areas)
     inertia = zeros(2, 2)
@@ -52,15 +54,29 @@ function _box_section_properties(station::Station, foil::FoilData)
         [thickness * web_length^3 / 12 0.0; 0.0 web_length * thickness^3 / 12],
     )
     for i in eachindex(areas)
-        inertia .+= translate_inertia_tensor(local_inertias[i], centers[i, :] .- centroid, areas[i])
+        inertia .+=
+            translate_inertia_tensor(local_inertias[i], centers[i, :] .- centroid, areas[i])
     end
     principal, angle = principal_inertia_tensor(inertia)
     vertices = [A'; B'; C'; D']
     vertices_mid = vertices .+ thickness .* [1 -1; -1 -1; 1 1; -1 1] ./ 2
-    return SectionProperties(inertia, principal, principal[1, 1], principal[2, 2], angle,
-                             centroid, (width - thickness) * (height - thickness), sum(areas),
-                             width, height, web_length, vertices, vertices_mid,
-                             centers[1, :], centers[2, :])
+    return SectionProperties(
+        inertia,
+        principal,
+        principal[1, 1],
+        principal[2, 2],
+        angle,
+        centroid,
+        (width - thickness) * (height - thickness),
+        sum(areas),
+        width,
+        height,
+        web_length,
+        vertices,
+        vertices_mid,
+        centers[1, :],
+        centers[2, :],
+    )
 end
 
 # ---------------------------------------------------------------------------
@@ -100,21 +116,37 @@ Circular tube inscribed in the airfoil section at the spar limits.
 function O_section(station::Station, foil::FoilData; offset::Float64 = 0.0)
     shape = foil_properties(station.chord, 0.0, station.limits, [0.0, 0.0], foil)
     center = [shape.lower[end, 1], (shape.upper[end, 2] + shape.lower[end, 2]) / 2]
-    radius_outer = min(abs(shape.upper[1, 1] - center[1]), shape.upper[1, 2] - center[2]) - offset
+    radius_outer =
+        min(abs(shape.upper[1, 1] - center[1]), shape.upper[1, 2] - center[2]) - offset
     radius_inner = radius_outer - station.thickness
-    radius_inner > 0 || throw(ArgumentError("tube thickness must be smaller than its radius"))
+    radius_inner > 0 ||
+        throw(ArgumentError("tube thickness must be smaller than its radius"))
     area = pi * (radius_outer^2 - radius_inner^2)
     mid_area = pi * ((radius_outer + radius_inner) / 2)^2
     inertia_scalar = pi * (radius_outer^4 - radius_inner^4) / 4
-    vertices = [center[1] - radius_outer center[2] - radius_outer;
-                center[1] + radius_outer center[2] - radius_outer;
-                center[1] - radius_outer center[2] + radius_outer;
-                center[1] + radius_outer center[2] + radius_outer]
-    return SectionProperties([inertia_scalar 0.0; 0.0 inertia_scalar],
-                             [inertia_scalar 0.0; 0.0 inertia_scalar], inertia_scalar,
-                             inertia_scalar, 0.0, center, mid_area, area, 2radius_outer,
-                             2radius_outer, 2radius_outer, vertices, vertices,
-                             center, center)
+    vertices = [
+        center[1] - radius_outer center[2] - radius_outer;
+        center[1] + radius_outer center[2] - radius_outer;
+        center[1] - radius_outer center[2] + radius_outer;
+        center[1] + radius_outer center[2] + radius_outer
+    ]
+    return SectionProperties(
+        [inertia_scalar 0.0; 0.0 inertia_scalar],
+        [inertia_scalar 0.0; 0.0 inertia_scalar],
+        inertia_scalar,
+        inertia_scalar,
+        0.0,
+        center,
+        mid_area,
+        area,
+        2radius_outer,
+        2radius_outer,
+        2radius_outer,
+        vertices,
+        vertices,
+        center,
+        center,
+    )
 end
 
 # ---------------------------------------------------------------------------

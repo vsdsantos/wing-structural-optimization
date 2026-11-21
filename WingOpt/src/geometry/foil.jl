@@ -18,7 +18,10 @@ The file is expected to live at `foil_dir/foil_name.dat`.
 The first non-numeric line (title) is skipped automatically.
 """
 function parse_foil(foil_name::String; foil_dir::String = "foils")
-    path = joinpath(foil_dir, endswith(lowercase(foil_name), ".dat") ? foil_name : "$foil_name.dat")
+    path = joinpath(
+        foil_dir,
+        endswith(lowercase(foil_name), ".dat") ? foil_name : "$foil_name.dat",
+    )
     isfile(path) || throw(ArgumentError("airfoil file not found: $path"))
     points = NTuple{2,Float64}[]
     for (line_number, line) in enumerate(eachline(path))
@@ -26,10 +29,12 @@ function parse_foil(foil_name::String; foil_dir::String = "foils")
         length(fields) < 2 && continue
         x, y = tryparse(Float64, fields[1]), tryparse(Float64, fields[2])
         (x === nothing || y === nothing) && continue
-        all(isfinite, (x, y)) || throw(ArgumentError("non-finite coordinate on line $line_number of $path"))
+        all(isfinite, (x, y)) ||
+            throw(ArgumentError("non-finite coordinate on line $line_number of $path"))
         push!(points, (x, y))
     end
-    length(points) >= 4 || throw(ArgumentError("airfoil file must contain at least four coordinate points"))
+    length(points) >= 4 ||
+        throw(ArgumentError("airfoil file must contain at least four coordinate points"))
     data = Matrix{Float64}(undef, length(points), 2)
     for (i, point) in enumerate(points)
         data[i, :] .= point
@@ -49,7 +54,9 @@ function parse_foil(foil_name::String; foil_dir::String = "foils")
                 push!(ys, surface[i, 2])
             end
         end
-        length(xs) >= 2 || throw(ArgumentError("each airfoil surface needs at least two distinct x coordinates"))
+        length(xs) >= 2 || throw(
+            ArgumentError("each airfoil surface needs at least two distinct x coordinates"),
+        )
         return xs, ys
     end
     ux, uy = unique_surface(upper)
@@ -68,11 +75,10 @@ end
 function _linear_interpolant(x::Vector{Float64}, y::Vector{Float64})
     return function (value)
         x0 = Float64(value)
-        x[1] - 1e-12 <= x0 <= x[end] + 1e-12 ||
-            throw(BoundsError(x, x0))
+        x[1] - 1e-12 <= x0 <= x[end] + 1e-12 || throw(BoundsError(x, x0))
         x0 = clamp(x0, x[1], x[end])
         i = clamp(searchsortedlast(x, x0), 1, length(x) - 1)
-        return y[i] + (x0 - x[i]) * (y[i + 1] - y[i]) / (x[i + 1] - x[i])
+        return y[i] + (x0 - x[i]) * (y[i+1] - y[i]) / (x[i+1] - x[i])
     end
 end
 
@@ -121,14 +127,32 @@ function foil_properties(
     front_length = upper[1, 2] - lower[1, 2]
     back_length = upper[end, 2] - lower[end, 2]
     area = trapz(upper[:, 1], upper[:, 2] .- lower[:, 2])
-    x_closed = vcat(upper[:, 1], reverse(lower[:, 1]),
-                    fill(upper[1, 1], 2), fill(upper[end, 1], 2))
-    y_closed = vcat(upper[:, 2], reverse(lower[:, 2]),
-                    [lower[1, 2], upper[1, 2], upper[end, 2], lower[end, 2]])
-    return FoilGeometry(upper, lower, segment_length(upper), segment_length(lower),
-                        front_length, back_length,
-                        segment_length(upper) + segment_length(lower) + abs(front_length) + abs(back_length),
-                        area, x_closed, y_closed)
+    x_closed = vcat(
+        upper[:, 1],
+        reverse(lower[:, 1]),
+        fill(upper[1, 1], 2),
+        fill(upper[end, 1], 2),
+    )
+    y_closed = vcat(
+        upper[:, 2],
+        reverse(lower[:, 2]),
+        [lower[1, 2], upper[1, 2], upper[end, 2], lower[end, 2]],
+    )
+    return FoilGeometry(
+        upper,
+        lower,
+        segment_length(upper),
+        segment_length(lower),
+        front_length,
+        back_length,
+        segment_length(upper) +
+        segment_length(lower) +
+        abs(front_length) +
+        abs(back_length),
+        area,
+        x_closed,
+        y_closed,
+    )
 end
 
 function _offset_surface!(points::Matrix{Float64}, offset::Float64)

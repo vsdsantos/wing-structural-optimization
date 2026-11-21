@@ -12,9 +12,12 @@ for an element of area `A`.
 Equivalent to Matlab's `translada_eixo` / `translate_inertia_tensor`.
 """
 function translate_inertia_tensor(I::Matrix{Float64}, d::Vector{Float64}, A::Float64)
-    size(I) == (2, 2) && length(d) == 2 || throw(DimensionMismatch("expected a 2×2 tensor and a 2-vector"))
-    return [I[1, 1] + d[1]^2 * A I[1, 2] + d[1] * d[2] * A;
-            I[2, 1] + d[1] * d[2] * A I[2, 2] + d[2]^2 * A]
+    size(I) == (2, 2) && length(d) == 2 ||
+        throw(DimensionMismatch("expected a 2×2 tensor and a 2-vector"))
+    return [
+        I[1, 1] + d[1]^2 * A I[1, 2] + d[1] * d[2] * A;
+        I[2, 1] + d[1] * d[2] * A I[2, 2] + d[2]^2 * A
+    ]
 end
 
 """
@@ -26,10 +29,12 @@ function rotate_inertia_tensor(I::Matrix{Float64}, theta::Float64)
     size(I) == (2, 2) || throw(DimensionMismatch("inertia tensor must be 2×2"))
     c, s = cos(2theta), sin(2theta)
     meanI = (I[1, 1] + I[2, 2]) / 2
-    return [meanI + (I[2, 2] - I[1, 1]) * c / 2 + I[1, 2] * s
-            (I[1, 1] - I[2, 2]) * s / 2 + I[1, 2] * c;
-            (I[1, 1] - I[2, 2]) * s / 2 + I[2, 1] * c
-            meanI + (I[1, 1] - I[2, 2]) * c / 2 - I[2, 1] * s]
+    return [
+        meanI + (I[2, 2] - I[1, 1]) * c / 2 + I[1, 2] * s
+        (I[1, 1] - I[2, 2]) * s / 2 + I[1, 2] * c;
+        (I[1, 1] - I[2, 2]) * s / 2 + I[2, 1] * c
+        meanI + (I[1, 1] - I[2, 2]) * c / 2 - I[2, 1] * s
+    ]
 end
 
 """

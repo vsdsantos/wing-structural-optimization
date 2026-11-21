@@ -20,10 +20,13 @@ function max_tension_criteria(sigma::Matrix{Float64}, mat::MaterialProperties, o
     size(sigma) == (3, 3) || throw(DimensionMismatch("stress tensor must be 3×3"))
     strengths = _failure_strengths(mat, opt)
     σ1, σ2, τ = sigma[1, 1], sigma[2, 2], sigma[1, 2]
-    margin(σ, tensile, compressive) = iszero(σ) ? Inf : (σ > 0 ? tensile / σ : -compressive / σ) - 1
-    return minimum((margin(σ1, strengths[1], strengths[2]),
-                    margin(σ2, strengths[3], strengths[4]),
-                    iszero(τ) ? Inf : strengths[5] / abs(τ) - 1))
+    margin(σ, tensile, compressive) =
+        iszero(σ) ? Inf : (σ > 0 ? tensile / σ : -compressive / σ) - 1
+    return minimum((
+        margin(σ1, strengths[1], strengths[2]),
+        margin(σ2, strengths[3], strengths[4]),
+        iszero(τ) ? Inf : strengths[5] / abs(τ) - 1,
+    ))
 end
 
 function _failure_strengths(mat::MaterialProperties, opt::String)
@@ -49,7 +52,7 @@ function tsai_wu_criteria(sigma::Matrix{Float64}, mat::MaterialProperties, opt::
     f66 = 1 / shear^2
     f12 = -0.5 * sqrt(f11 * f22)
     linear = f1 * σ1 + f2 * σ2
-    quadratic = f11 * σ1^2 + f22 * σ2^2 + f66 * τ^2 + 2f12 * σ1 * σ2
+    quadratic = f11 * σ1^2 + f22 * σ2^2 + f66 * τ^2 + 2.0f12 * σ1 * σ2
     iszero(linear) && iszero(quadratic) && return Inf
     roots = quadratic_roots(quadratic, linear, -1.0)
     valid_roots = filter(root -> isreal(root) && real(root) >= 0, roots)

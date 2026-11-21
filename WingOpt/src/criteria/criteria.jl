@@ -24,10 +24,10 @@ function safety_margin(
     1 <= idx <= length(load_half.M) || throw(BoundsError(load_half.M, idx))
     station.thickness > 0 && prop.area > 0 && prop.Iz0 > 0 && prop.area_mid > 0 ||
         throw(ArgumentError("section area, inertia, and thickness must be positive"))
-    moment, shear, axial, torque = load_half.M[idx], load_half.V[idx],
-                                   load_half.F[idx], load_half.Mt[idx]
+    moment, shear, axial, torque =
+        load_half.M[idx], load_half.V[idx], load_half.F[idx], load_half.Mt[idx]
     top_y, bottom_y = maximum(prop.vertices[:, 2]) - prop.centroid[2],
-                       minimum(prop.vertices[:, 2]) - prop.centroid[2]
+    minimum(prop.vertices[:, 2]) - prop.centroid[2]
     normal(y) = axial / prop.area - moment * y / prop.Iz0
     τ_bend = shear * prop.height / (2station.thickness * prop.Iz0)
     τ_torsion = torque / (2prop.area_mid * station.thickness)
@@ -67,7 +67,8 @@ function beam_mass(
     mat_box::MaterialProperties,
     mat_reinforcer::MaterialProperties,
 )
-    length(stations) == length(props) || throw(DimensionMismatch("stations and properties must match"))
+    length(stations) == length(props) ||
+        throw(DimensionMismatch("stations and properties must match"))
     isempty(stations) && return (0.0, Float64[])
     spans = getfield.(stations, :span)
     issorted(spans) && all(diff(spans) .> 0) ||
@@ -78,9 +79,11 @@ function beam_mass(
     if length(stations) == 1
         dm = [2spans[1] * mass_per_length[1]]
     else
-        edges = vcat(max(0.0, spans[1] - (spans[2] - spans[1]) / 2),
-                     (spans[1:(end - 1)] .+ spans[2:end]) ./ 2,
-                     spans[end] + (spans[end] - spans[end - 1]) / 2)
+        edges = vcat(
+            max(0.0, spans[1] - (spans[2] - spans[1]) / 2),
+            (spans[1:(end-1)] .+ spans[2:end]) ./ 2,
+            spans[end] + (spans[end] - spans[end-1]) / 2,
+        )
         dm = diff(edges) .* mass_per_length
     end
     return (sum(dm), dm)

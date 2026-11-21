@@ -33,9 +33,11 @@ function area_inertia_tensor(thick::Float64, pts::Matrix{Float64})
     size(pts, 1) >= 2 || return zeros(2, 2)
     dx, dy = diff(pts[:, 1]), diff(pts[:, 2])
     dl = hypot.(dx, dy)
-    x, y = pts[1:(end - 1), 1] .+ dx ./ 2, pts[1:(end - 1), 2] .+ dy ./ 2
-    return thick .* [trapz(y .^ 2 .* dl) trapz(x .* y .* dl);
-                     trapz(x .* y .* dl) trapz(x .^ 2 .* dl)]
+    x, y = pts[1:(end-1), 1] .+ dx ./ 2, pts[1:(end-1), 2] .+ dy ./ 2
+    return thick .* [
+        trapz(y .^ 2 .* dl) trapz(x .* y .* dl);
+        trapz(x .* y .* dl) trapz(x .^ 2 .* dl)
+    ]
 end
 
 """
@@ -48,7 +50,7 @@ function first_moment_of_area(pts::Matrix{Float64}, thick::Float64)
     size(pts, 1) >= 2 || return (0.0, 0.0)
     dx, dy = diff(pts[:, 1]), diff(pts[:, 2])
     dl = hypot.(dx, dy)
-    x, y = pts[1:(end - 1), 1] .+ dx ./ 2, pts[1:(end - 1), 2] .+ dy ./ 2
+    x, y = pts[1:(end-1), 1] .+ dx ./ 2, pts[1:(end-1), 2] .+ dy ./ 2
     dA = thick .* dl
     return (trapz(x .* dA), trapz(y .* dA))
 end
@@ -65,6 +67,6 @@ function section_centroid(pts::Matrix{Float64})
     dl = hypot.(dx, dy)
     length_total = sum(dl)
     length_total > 0 || throw(ArgumentError("polyline must have nonzero length"))
-    x, y = pts[1:(end - 1), 1] .+ dx ./ 2, pts[1:(end - 1), 2] .+ dy ./ 2
+    x, y = pts[1:(end-1), 1] .+ dx ./ 2, pts[1:(end-1), 2] .+ dy ./ 2
     return [sum(x .* dl) / length_total, sum(y .* dl) / length_total]
 end

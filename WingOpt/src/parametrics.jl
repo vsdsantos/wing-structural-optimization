@@ -24,10 +24,14 @@ Returns a `StructuredGeometry` with one value per span break (3 control points).
 function reinforced_box_parametric_geometry(X::AbstractVector, wing::WingGeometry)
     length(X) == 5 || throw(DimensionMismatch("design vector X must contain five values"))
     all(isfinite, X) || throw(ArgumentError("design variables must be finite"))
-    length(wing.chord_transitions) == 3 ||
-        throw(DimensionMismatch("reinforced-box parametrization requires root, mid-span, and tip chords"))
+    length(wing.chord_transitions) == 3 || throw(
+        DimensionMismatch(
+            "reinforced-box parametrization requires root, mid-span, and tip chords",
+        ),
+    )
     x_fraction, tip_width_fraction, root_width_fraction, thickness_mm, reinforcer = X
-    thickness_mm > 0 && reinforcer > 0 || throw(ArgumentError("thicknesses must be positive"))
+    thickness_mm > 0 && reinforcer > 0 ||
+        throw(ArgumentError("thicknesses must be positive"))
     chords = wing.chord_transitions
     fractions = [root_width_fraction, root_width_fraction, tip_width_fraction]
     return StructuredGeometry(

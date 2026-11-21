@@ -17,7 +17,7 @@ Equivalent to Matlab's `trapz(x, y)`.
 function trapz(x::AbstractVector, y::AbstractVector)
     length(x) == length(y) || throw(DimensionMismatch("x and y must have equal lengths"))
     length(x) < 2 && return 0.0
-    return sum((x[i + 1] - x[i]) * (y[i + 1] + y[i]) / 2 for i in 1:(length(x) - 1))
+    return sum((x[i+1] - x[i]) * (y[i+1] + y[i]) / 2 for i = 1:(length(x)-1))
 end
 
 """
@@ -42,8 +42,8 @@ Equivalent to Matlab's `cumtrapz(x, y)`.
 function cumtrapz(x::AbstractVector, y::AbstractVector)
     length(x) == length(y) || throw(DimensionMismatch("x and y must have equal lengths"))
     result = zeros(Float64, length(y))
-    for i in 2:length(y)
-        result[i] = result[i - 1] + (x[i] - x[i - 1]) * (y[i] + y[i - 1]) / 2
+    for i = 2:length(y)
+        result[i] = result[i-1] + (x[i] - x[i-1]) * (y[i] + y[i-1]) / 2
     end
     return result
 end
@@ -73,8 +73,10 @@ function quadratic_roots(a::Float64, b::Float64, c::Float64)
         return (root, root)
     end
     discriminant = b^2 - 4a * c
-    discriminant < 0 && return (complex(-b, sqrt(-discriminant)) / (2a),
-                                complex(-b, -sqrt(-discriminant)) / (2a))
+    discriminant < 0 && return (
+        complex(-b, sqrt(-discriminant)) / (2a),
+        complex(-b, -sqrt(-discriminant)) / (2a),
+    )
     root = sqrt(discriminant)
     q = -0.5 * (b + copysign(root, b))
     iszero(q) && return (0.0, 0.0)
