@@ -9,10 +9,20 @@ the UFMG's Aerodesign Team (Uai, Sô! Fly!).
 
 ## Improvements
  - [ ] Implement others beam cross-sections.
- - [ ] Implement foil geometric torsion.
- - [ ] Implement wing sweep.
- - [ ] Implement foil aerodynamic torsion.
  - [ ] Implement composite ply analysis.
+
+### Follow-up work (not part of MATLAB parity)
+
+The Julia port preserves the current MATLAB safety/uncertainty factors,
+half-wing sign conventions, and torsion calculations. Wing sweep, geometric
+airfoil torsion, and airfoil-based aerodynamic torsion remain unsupported
+follow-up improvements; the existing geometry fields do not apply these
+effects to the load model.
+
+The thin-wall MATLAB helper currently computes `sum(thickness × length)`
+instead of the dimensionally standard `sum(length / thickness)`. The Julia
+port preserves this numerical behavior for parity; correcting it is a
+follow-up because it changes torsion results.
 
 ## Next Version
  - [ ] Migration to Python.

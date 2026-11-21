@@ -11,11 +11,18 @@ bicelular.m; and `criterias/displacement/wing_torsion.m`.
 """
     integral_linha_media(t_vec, s_vec) -> Float64
 
-Compute `∮ ds/t` around a closed thin-walled section, given vectors of
-wall thickness `t_vec` and segment lengths `s_vec` (both length N).
+Compute the MATLAB implementation's `sum(tᵢ * sᵢ)` around a closed
+thin-walled section. This preserves its current input and numerical convention.
 """
 function integral_linha_media(t_vec::AbstractVector, s_vec::AbstractVector)
-    error("Not implemented")
+    length(t_vec) == length(s_vec) ||
+        throw(DimensionMismatch("thickness and segment-length vectors must match"))
+    isempty(t_vec) && return 0.0
+    all(isfinite, t_vec) && all(isfinite, s_vec) ||
+        throw(ArgumentError("thicknesses and segment lengths must be finite"))
+    all(>(0), t_vec) && all(>=(0), s_vec) ||
+        throw(ArgumentError("thicknesses must be positive and segment lengths nonnegative"))
+    return sum(Float64(t) * Float64(s) for (t, s) in zip(t_vec, s_vec))
 end
 
 """
@@ -33,14 +40,33 @@ Torsion angle for a single-cell thin-walled section (Bredt–Batho).
 Returns `(phi_total, dphi_dx)` where `dphi_dx` is a function `x → dφ/dx`.
 """
 function ang_torcao_parede_fina(
-    torque::Float64,
+    torque::Union{Real,Function},
     thick_vec::AbstractVector,
     s_vec::AbstractVector,
-    Am::Float64,
-    G::Float64,
+    Am::Real,
+    G::Real,
     lim::AbstractVector,
 )
-    error("Not implemented")
+    length(lim) == 2 || throw(ArgumentError("lim must contain two span limits"))
+    isfinite(Am) && Am > 0 || throw(ArgumentError("Am must be positive and finite"))
+    isfinite(G) && G > 0 || throw(ArgumentError("G must be positive and finite"))
+    t_integral = integral_linha_media(thick_vec, s_vec)
+    torque_fn = torque isa Function ? torque : x -> zero.(x) .+ torque
+    dphi_dx = x -> torque_fn(x) .* (t_integral / (4 * G * Am^2))
+    phi_total = _simpson_integral(dphi_dx, Float64(lim[1]), Float64(lim[2]))
+    return phi_total, dphi_dx
+end
+
+function _simpson_integral(f, a::Float64, b::Float64)
+    isfinite(a) && isfinite(b) || throw(ArgumentError("integration limits must be finite"))
+    a == b && return 0.0
+    n = 256
+    h = (b - a) / n
+    total = Float64(f(a)) + Float64(f(b))
+    for i = 1:(n-1)
+        total += (isodd(i) ? 4 : 2) * Float64(f(a + i * h))
+    end
+    return total * h / 3
 end
 
 # ---------------------------------------------------------------------------
@@ -63,11 +89,27 @@ Returns a 3-element vector of shear flows.
 function bicelular(
     torque_vec::AbstractVector,
     area_vec::AbstractVector,
-    rel_q::Float64,
+    rel_q::AbstractVector,
     t_cells::AbstractVector,
     s_cells::AbstractVector,
 )
-    error("Not implemented")
+    length(torque_vec) == 2 && length(area_vec) == 2 ||
+        throw(DimensionMismatch("the bi-cell model requires two torques and areas"))
+    length(rel_q) == length(t_cells) == length(s_cells) == 3 ||
+        throw(DimensionMismatch("rel_q, t_cells and s_cells must each have length 3"))
+    all(isfinite, area_vec) && all(>(0), area_vec) ||
+        throw(ArgumentError("cell areas must be positive and finite"))
+    all(isfinite, torque_vec) && all(isfinite, rel_q) ||
+        throw(ArgumentError("torques and compatibility coefficients must be finite"))
+    line_integrals =
+        [integral_linha_media(t_cells[i], s_cells[i]) for i in eachindex(t_cells)]
+    A = [
+        Float64.(rel_q)'
+        2 * area_vec[1] 2 * area_vec[2] 0
+        line_integrals[1] / area_vec[1] -line_integrals[2] / area_vec[2] 2 * line_integrals[3] * sum(1 ./ area_vec)
+    ]
+    B = [0.0, sum(torque_vec), 0.0]
+    return A \ B
 end
 
 # ---------------------------------------------------------------------------
@@ -90,7 +132,31 @@ function wing_torsion(
     Mt::AbstractVector,
     mat::MaterialProperties,
 )
-    error("Not implemented")
+    length(stations) == length(props) == length(Mt) || throw(
+        DimensionMismatch("stations, properties and torque must have matching lengths"),
+    )
+    isempty(stations) && return Float64[]
+    all(isfinite, Mt) || throw(ArgumentError("torques must be finite"))
+    spans = getfield.(stations, :span)
+    length(spans) < 2 ||
+        all(diff(spans) .> 0) ||
+        throw(ArgumentError("station spans must be strictly increasing"))
+    G = mat.G
+    isfinite(G) && G > 0 ||
+        throw(ArgumentError("shear modulus must be positive and finite"))
+    dphi_dx = similar(Float64.(Mt))
+    for i in eachindex(stations)
+        Am = props[i].area_mid
+        t = stations[i].thickness
+        h = props[i].height
+        w = props[i].width
+        isfinite(Am) && Am > 0 ||
+            throw(ArgumentError("mid-line area must be positive and finite"))
+        isfinite(t) && t > 0 ||
+            throw(ArgumentError("wall thickness must be positive and finite"))
+        dphi_dx[i] = Mt[i] * 2 * (h + w) / (4 * Am^2 * G * t)
+    end
+    return cumtrapz(spans, dphi_dx)
 end
 
 # ---------------------------------------------------------------------------

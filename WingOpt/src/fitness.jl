@@ -12,10 +12,36 @@ Key differences from the Matlab version:
     example_aero_loads(wing; n_panels=20) -> Vector{AeroLoad}
 
 Generate a simple elliptic lift distribution as an example aerodynamic load.
+The lift and pitching-moment distributions are normalized to `total_lift`
+(N) and `total_pitching_moment` (N·m), respectively. Panel positions are
+full-span centers; an even `n_panels` is required for a symmetric wing.
 In production use, replace with actual VLM/CFD loads.
 """
-function example_aero_loads(wing::WingGeometry; n_panels::Int = 20)
-    error("Not implemented")
+function example_aero_loads(
+    wing::WingGeometry;
+    n_panels::Int = 20,
+    total_lift::Real = 1.0,
+    total_pitching_moment::Real = 0.0,
+)
+    n_panels > 0 && iseven(n_panels) ||
+        throw(ArgumentError("n_panels must be a positive even number"))
+    isfinite(wing.full_span) && wing.full_span > 0 ||
+        throw(ArgumentError("wing full span must be positive and finite"))
+    isfinite(total_lift) && total_lift >= 0 ||
+        throw(ArgumentError("total_lift must be nonnegative and finite"))
+    isfinite(total_pitching_moment) ||
+        throw(ArgumentError("total_pitching_moment must be finite"))
+
+    panel_width = wing.full_span / n_panels
+    x = collect(
+        range(-wing.full_span / 2 + panel_width / 2; step = panel_width, length = n_panels),
+    )
+    shape = sqrt.(max.(0.0, 1 .- (2 .* x ./ wing.full_span) .^ 2))
+    normalization =
+        trapz(vcat(-wing.full_span / 2, x, wing.full_span / 2), vcat(0.0, shape, 0.0))
+    dLdb = shape .* (total_lift / normalization)
+    dMadb = shape .* (total_pitching_moment / normalization)
+    return [AeroLoad(x, dLdb, dMadb)]
 end
 
 """
