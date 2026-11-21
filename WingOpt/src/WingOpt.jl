@@ -40,6 +40,7 @@ using LinearAlgebra
 using Interpolations
 using Metaheuristics
 using Optim
+using TOML
 
 # ── Core types ────────────────────────────────────────────────────────────────
 include("types.jl")
@@ -73,8 +74,21 @@ include("plots.jl")
 # ── Entry point ───────────────────────────────────────────────────────────────
 include("main.jl")
 
+# ── Domain namespaces and portable input/output ────────────────────────────────
+include("aerodynamics.jl")
+include("io.jl")
+include("domains.jl")
+
 # ── Public API exports ────────────────────────────────────────────────────────
 export
+    Geometry,
+    Loads,
+    StructuralAnalysis,
+    Aerodynamics,
+    Optimization,
+    InputOutput,
+    Visualization,
+
     # Types
     MaterialProperties,
     WingGeometry,
