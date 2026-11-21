@@ -68,16 +68,21 @@ function beam_mass(
     mat_reinforcer::MaterialProperties,
 )
     length(stations) == length(props) || throw(DimensionMismatch("stations and properties must match"))
-    length(stations) < 2 && return (0.0, Float64[])
+    isempty(stations) && return (0.0, Float64[])
     spans = getfield.(stations, :span)
     issorted(spans) && all(diff(spans) .> 0) ||
         throw(ArgumentError("stations must have strictly increasing spans"))
     area_box = getfield.(props, :area)
     area_reinforcer = 2 .* getfield.(stations, :reinforcer) .^ 2
-    dm = [(spans[i + 1] - spans[i]) *
-          ((area_box[i] + area_box[i + 1]) * mat_box.dens +
-           (area_reinforcer[i] + area_reinforcer[i + 1]) * mat_reinforcer.dens) / 2
-          for i in 1:(length(stations) - 1)]
+    mass_per_length = area_box .* mat_box.dens .+ area_reinforcer .* mat_reinforcer.dens
+    if length(stations) == 1
+        dm = [2spans[1] * mass_per_length[1]]
+    else
+        edges = vcat(max(0.0, spans[1] - (spans[2] - spans[1]) / 2),
+                     (spans[1:(end - 1)] .+ spans[2:end]) ./ 2,
+                     spans[end] + (spans[end] - spans[end - 1]) / 2)
+        dm = diff(edges) .* mass_per_length
+    end
     return (sum(dm), dm)
 end
 

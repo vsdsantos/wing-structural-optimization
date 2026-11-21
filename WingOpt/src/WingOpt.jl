@@ -38,9 +38,6 @@ module WingOpt
 
 using LinearAlgebra
 using Random
-using Interpolations
-using Metaheuristics
-using Optim
 
 # ── Core types ────────────────────────────────────────────────────────────────
 include("types.jl")

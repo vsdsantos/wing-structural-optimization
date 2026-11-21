@@ -52,7 +52,8 @@ function tsai_wu_criteria(sigma::Matrix{Float64}, mat::MaterialProperties, opt::
     quadratic = f11 * σ1^2 + f22 * σ2^2 + f66 * τ^2 + 2f12 * σ1 * σ2
     iszero(linear) && iszero(quadratic) && return Inf
     roots = quadratic_roots(quadratic, linear, -1.0)
-    safety_factor = maximum(real.(roots[real.(roots) .>= 0]); init = 0.0)
+    valid_roots = filter(root -> isreal(root) && real(root) >= 0, roots)
+    safety_factor = maximum(real.(valid_roots); init = 0.0)
     return safety_factor - 1
 end
 

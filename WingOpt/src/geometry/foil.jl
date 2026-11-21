@@ -30,12 +30,15 @@ function parse_foil(foil_name::String; foil_dir::String = "foils")
         push!(points, (x, y))
     end
     length(points) >= 4 || throw(ArgumentError("airfoil file must contain at least four coordinate points"))
-    data = reduce(vcat, permutedims(collect(point)) for point in points)
+    data = Matrix{Float64}(undef, length(points), 2)
+    for (i, point) in enumerate(points)
+        data[i, :] .= point
+    end
     leading_edge = argmin(data[:, 1])
     upper = data[1:leading_edge, :]
     lower = data[leading_edge:end, :]
-    sort!(upper; by = first)
-    sort!(lower; by = first)
+    upper = upper[sortperm(upper[:, 1]), :]
+    lower = lower[sortperm(lower[:, 1]), :]
     function unique_surface(surface)
         xs, ys = Float64[], Float64[]
         for i in eachindex(surface[:, 1])
@@ -51,7 +54,11 @@ function parse_foil(foil_name::String; foil_dir::String = "foils")
     end
     ux, uy = unique_surface(upper)
     lx, ly = unique_surface(lower)
-    min(diff(ux)...) > 0 && min(diff(lx)...) > 0 || throw(ArgumentError("airfoil x coordinates must increase"))
+    x_min, x_max = minimum(data[:, 1]), maximum(data[:, 1])
+    ux .= (ux .- x_min) ./ (x_max - x_min)
+    lx .= (lx .- x_min) ./ (x_max - x_min)
+    minimum(diff(ux)) > 0 && minimum(diff(lx)) > 0 ||
+        throw(ArgumentError("airfoil x coordinates must increase"))
     upper_interp = _linear_interpolant(ux, uy)
     lower_interp = _linear_interpolant(lx, ly)
     spacing = min(minimum(diff(ux)), minimum(diff(lx))) * 0.1

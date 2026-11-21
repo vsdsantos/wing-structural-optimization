@@ -210,6 +210,7 @@ function run_optimizer(
     x0::Union{Nothing,Vector{Float64}} = nothing,
     lb::Vector{Float64} = DEFAULT_LB,
     ub::Vector{Float64} = DEFAULT_UB,
+    parallel::Bool = false,
     kwargs...,
 )
     length(lb) == length(ub) || throw(DimensionMismatch("lower and upper bounds must match"))

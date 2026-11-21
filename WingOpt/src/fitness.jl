@@ -73,7 +73,8 @@ function fit_function(
     length(X) == 5 || throw(DimensionMismatch("design vector X must contain five values"))
     isempty(loads) && throw(ArgumentError("at least one aerodynamic load case is required"))
     geometry = reinforced_box_parametric_geometry(X, wing)
-    span = sort(unique(vcat(0.0, reduce(vcat, (load.x[load.x .> 0] for load in loads)))))
+    span = sort(unique(reduce(vcat, (load.x[load.x .>= 0] for load in loads))))
+    isempty(span) && throw(ArgumentError("loads must include right-wing spanwise stations"))
     span[end] <= wing.full_span / 2 || throw(ArgumentError("load stations exceed the semi-span"))
     stations = generate_wing_stations(wing, geometry, span)
     section_props = [compute_section(station, foil, config.section_type) for station in stations]

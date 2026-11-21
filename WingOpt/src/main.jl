@@ -49,5 +49,14 @@ function run_optimization(
     n_panels::Int = 20,
     kwargs...,
 )
-    error("Not implemented")
+    config = build_run_config(run_case)
+    wing = build_wing_geometry(config)
+    foil_path = isdir(foil_dir) ? foil_dir : joinpath(@__DIR__, "..", "..", foil_dir)
+    foil = parse_foil(config.foil_name; foil_dir = foil_path)
+    aero_loads = loads === nothing ? example_aero_loads(wing; n_panels) : loads
+    initial = [0.2, 0.2, 0.2, 2.0, 0.005]
+    objective = x -> first(fit_function(x, config, wing, foil, aero_loads))
+    result = run_optimizer(optimizer, objective; x0 = initial, parallel, kwargs...)
+    _, data = fit_function(result.x, config, wing, foil, aero_loads)
+    return result, data
 end
