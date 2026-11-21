@@ -3,6 +3,9 @@ A set of tools for wing structural optimization in Matlab.
 This code was orginally developed for the SAE Aerodesign Brasil competition at
 the UFMG's Aerodesign Team (Uai, Sô! Fly!).
 
+The MATLAB workflow inventory, Julia module mapping, and migration contract
+are documented in [the migration specification](docs/matlab-migration-spec.md).
+
 ## TODO
  - [ ] Refactor the code to be more modular.
  - [ ] Full documentation corverge.
@@ -15,8 +18,7 @@ the UFMG's Aerodesign Team (Uai, Sô! Fly!).
  - [ ] Implement composite ply analysis.
 
 ## Next Version
- - [ ] Migration to Python.
- - [ ] Migration to OpenMDAO.
+ - [ ] Complete the migration to Julia (package scaffold: `WingOpt/`).
 
 ## References
 
