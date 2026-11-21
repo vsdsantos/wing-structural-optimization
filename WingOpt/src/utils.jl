@@ -15,7 +15,12 @@ Trapezoidal integration of `y` over `x`.
 Equivalent to Matlab's `trapz(x, y)`.
 """
 function trapz(x::AbstractVector, y::AbstractVector)
-    error("Not implemented")
+    length(x) == length(y) || throw(DimensionMismatch("x and y must have the same length"))
+    length(x) < 2 && return 0.0
+    return sum(
+        (Float64(y[i]) + Float64(y[i+1])) * (Float64(x[i+1]) - Float64(x[i])) / 2 for
+        i = 1:(length(x)-1)
+    )
 end
 
 """
@@ -24,7 +29,7 @@ end
 Trapezoidal integration with unit spacing.
 """
 function trapz(y::AbstractVector)
-    error("Not implemented")
+    return trapz(collect(0:(length(y)-1)), y)
 end
 
 # ---------------------------------------------------------------------------
@@ -38,7 +43,14 @@ Cumulative trapezoidal integration of `y` over `x`.
 Equivalent to Matlab's `cumtrapz(x, y)`.
 """
 function cumtrapz(x::AbstractVector, y::AbstractVector)
-    error("Not implemented")
+    length(x) == length(y) || throw(DimensionMismatch("x and y must have the same length"))
+    result = zeros(Float64, length(x))
+    for i = 2:length(x)
+        result[i] =
+            result[i-1] +
+            (Float64(y[i-1]) + Float64(y[i])) * (Float64(x[i]) - Float64(x[i-1])) / 2
+    end
+    return result
 end
 
 """
@@ -47,7 +59,7 @@ end
 Cumulative trapezoidal integration with unit spacing.
 """
 function cumtrapz(y::AbstractVector)
-    error("Not implemented")
+    return cumtrapz(collect(0:(length(y)-1)), y)
 end
 
 # ---------------------------------------------------------------------------

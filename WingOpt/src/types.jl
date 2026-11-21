@@ -136,7 +136,7 @@ end
 
 """Aerodynamic load distribution (one flight case)."""
 struct AeroLoad
-    x::Vector{Float64}       # panel centre spanwise positions (m), full span
+    x::Vector{Float64}       # ascending panel-centre span positions (m), root-centred
     dLdb::Vector{Float64}    # lift per unit span (N/m), full span
     dMadb::Vector{Float64}   # pitching moment per unit span (N), full span
 end
