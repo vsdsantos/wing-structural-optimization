@@ -28,21 +28,42 @@ function safety_margin(
         load_half.M[idx], load_half.V[idx], load_half.F[idx], load_half.Mt[idx]
     top_y, bottom_y = maximum(prop.vertices[:, 2]) - prop.centroid[2],
     minimum(prop.vertices[:, 2]) - prop.centroid[2]
-    normal(y) = axial / prop.area - moment * y / prop.Iz0
+    box, spar = material_properties("balsa"), material_properties("freijo")
+    reinforcement_area = station.reinforcer^2
+    reinforcement_y = [prop.mc_centroid[2], prop.mt_centroid[2]] .- prop.centroid[2]
+    EA_box = box.axial_E * prop.area
+    EA_reinforcement = spar.axial_E * reinforcement_area
+    stiffness = hcat(
+        [EA_box + 2EA_reinforcement, EA_reinforcement * sum(reinforcement_y)],
+        [
+            EA_reinforcement * sum(reinforcement_y),
+            box.axial_E * prop.I[1, 1] + EA_reinforcement * sum(reinforcement_y .^ 2),
+        ],
+    )
+    strain_curvature = stiffness \ [axial, -moment]
+    normal_box(y) = box.axial_E * (strain_curvature[1] + strain_curvature[2] * y)
+    normal_reinforcement(y) = spar.axial_E * (strain_curvature[1] + strain_curvature[2] * y)
     τ_bend = shear * prop.height / (2station.thickness * prop.Iz0)
     τ_torsion = torque / (2prop.area_mid * station.thickness)
     τ = abs(τ_bend) + abs(τ_torsion)
-    wood, spar = material_properties("balsa"), material_properties("freijo")
     margins = Float64[]
     for y in (top_y, bottom_y)
         stress = zeros(3, 3)
-        stress[1, 1] = normal(y)
-        push!(margins, max_tension_criteria(stress, spar, "axial"))
-        push!(margins, tsai_wu_criteria(stress, spar, "axial"))
+        stress[1, 1] = normal_box(y)
+        push!(margins, max_tension_criteria(stress, box, "axial"))
+        push!(margins, tsai_wu_criteria(stress, box, "axial"))
         shear_stress = zeros(3, 3)
         shear_stress[1, 2] = shear_stress[2, 1] = τ
-        push!(margins, max_tension_criteria(shear_stress, wood, "axial"))
-        push!(margins, tsai_wu_criteria(shear_stress, wood, "axial"))
+        push!(margins, max_tension_criteria(shear_stress, box, "axial"))
+        push!(margins, tsai_wu_criteria(shear_stress, box, "axial"))
+    end
+    if reinforcement_area > 0
+        for y in reinforcement_y
+            stress = zeros(3, 3)
+            stress[1, 1] = normal_reinforcement(y)
+            push!(margins, max_tension_criteria(stress, spar, "axial"))
+            push!(margins, tsai_wu_criteria(stress, spar, "axial"))
+        end
     end
     return minimum(margins)
 end
@@ -101,7 +122,8 @@ cutout span outward), Cᵢ is the local chord in feet, and Δsᵢ is the
 span increment in feet.
 
 The criterion is F ≤ 200/Vd² where Vd is the design dive speed in mph.
-Returns F / (200/Vd²): values < 1 pass, values ≥ 1 fail.
+Returns F / (200/Vd²): values < 1 pass, values ≥ 1 fail. Returns `Inf`
+when the legacy wing configuration lacks the inputs needed to evaluate it.
 """
 function report_45(
     stations::Vector{Station},
@@ -113,5 +135,5 @@ function report_45(
         throw(DimensionMismatch("stations and properties must match"))
     # The archived MATLAB geometry omits V_d and aileron span, so its
     # Report-45 ratio cannot be evaluated for the legacy default case.
-    return 0.0
+    return Inf
 end

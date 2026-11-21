@@ -31,13 +31,14 @@ Returned as a 2×2 symmetric matrix [Ix Ixy; Ixy Iy].
 function area_inertia_tensor(thick::Float64, pts::Matrix{Float64})
     size(pts, 2) == 2 || throw(DimensionMismatch("points must be N×2"))
     size(pts, 1) >= 2 || return zeros(2, 2)
-    dx, dy = diff(pts[:, 1]), diff(pts[:, 2])
+    x0, y0 = pts[1:(end-1), 1], pts[1:(end-1), 2]
+    x1, y1 = pts[2:end, 1], pts[2:end, 2]
+    dx, dy = x1 .- x0, y1 .- y0
     dl = hypot.(dx, dy)
-    x, y = pts[1:(end-1), 1] .+ dx ./ 2, pts[1:(end-1), 2] .+ dy ./ 2
-    return thick .* [
-        trapz(y .^ 2 .* dl) trapz(x .* y .* dl);
-        trapz(x .* y .* dl) trapz(x .^ 2 .* dl)
-    ]
+    Ix = thick * sum(dl .* (y0 .^ 2 .+ y0 .* y1 .+ y1 .^ 2) ./ 3)
+    Iy = thick * sum(dl .* (x0 .^ 2 .+ x0 .* x1 .+ x1 .^ 2) ./ 3)
+    Ixy = thick * sum(dl .* (2x0 .* y0 .+ x0 .* y1 .+ x1 .* y0 .+ 2x1 .* y1) ./ 6)
+    return [Ix Ixy; Ixy Iy]
 end
 
 """
@@ -48,11 +49,11 @@ First moments of area for a thin element of thickness `thick` along `pts`.
 function first_moment_of_area(pts::Matrix{Float64}, thick::Float64)
     size(pts, 2) == 2 || throw(DimensionMismatch("points must be N×2"))
     size(pts, 1) >= 2 || return (0.0, 0.0)
-    dx, dy = diff(pts[:, 1]), diff(pts[:, 2])
+    x0, y0 = pts[1:(end-1), 1], pts[1:(end-1), 2]
+    x1, y1 = pts[2:end, 1], pts[2:end, 2]
+    dx, dy = x1 .- x0, y1 .- y0
     dl = hypot.(dx, dy)
-    x, y = pts[1:(end-1), 1] .+ dx ./ 2, pts[1:(end-1), 2] .+ dy ./ 2
-    dA = thick .* dl
-    return (trapz(x .* dA), trapz(y .* dA))
+    return (thick * sum((x0 .+ x1) .* dl ./ 2), thick * sum((y0 .+ y1) .* dl ./ 2))
 end
 
 """

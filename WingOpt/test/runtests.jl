@@ -14,9 +14,13 @@ const FOIL_DIR = normpath(joinpath(@__DIR__, "..", "..", "foils"))
     @test WingOpt.cumtrapz([0.0, 1.0], [0.0, 1.0]) ≈ [0.0, 0.5]
     @test_throws DimensionMismatch WingOpt.trapz([0.0], [0.0, 1.0])
     @test collect(WingOpt.quadratic_roots(1.0, -3.0, 2.0)) ≈ [2.0, 1.0]
+    line_inertia = area_inertia_tensor(2.0, [0.0 0.0; 1.0 0.0])
+    @test line_inertia[1, 1] == 0
+    @test line_inertia[2, 2] ≈ 2 / 3
+    @test collect(first_moment_of_area([0.0 0.0; 1.0 0.0], 2.0)) ≈ [1.0, 0.0]
 
     translated = translate_inertia_tensor([1.0 0.0; 0.0 1.0], [2.0, 3.0], 4.0)
-    @test translated ≈ [17.0 24.0; 24.0 37.0]
+    @test translated ≈ [37.0 24.0; 24.0 17.0]
     principal, angle = principal_inertia_tensor([4.0 0.0; 0.0 2.0])
     @test principal ≈ [4.0 0.0; 0.0 2.0]
     @test angle ≈ 0.0
@@ -43,6 +47,7 @@ end
     @test minimum(props[2].vertices[:, 1]) <=
           props[2].centroid[1] <=
           maximum(props[2].vertices[:, 1])
+    @test report_45(stations, props, wing, material_properties("balsa")) == Inf
 end
 
 @testset "Failure criteria and optimization" begin
@@ -56,6 +61,7 @@ end
     @test max_tension_criteria(stress, material, "axial") > 0
     @test tsai_wu_criteria(stress, material, "axial") > 0
     @test weight_function(2.0, 2.0, 0.0) == -0.5
+    @test weight_function(2.0, 2.0, Inf) == -0.25
 
     result = run_optimizer(
         :ps,

@@ -73,7 +73,8 @@ support (`FX`) implementation is incomplete. Therefore:
 - Fixed-support (`fx`) analysis fails explicitly rather than returning an
   invented result.
 - Report-45 is not evaluated: the archived wing configuration lacks the
-  design dive speed and aileron-span values that criterion requires.
+  design dive speed and aileron-span values that criterion requires. Its
+  unavailable value is represented as `Inf`, so it is not treated as passing.
 - The default aerodynamic distribution is synthetic. Engineering results
   require user-supplied aerodynamic loads and independent validation.
 - The MATLAB scripts are retained for reference and have not been deprecated.

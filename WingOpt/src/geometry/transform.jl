@@ -15,8 +15,8 @@ function translate_inertia_tensor(I::Matrix{Float64}, d::Vector{Float64}, A::Flo
     size(I) == (2, 2) && length(d) == 2 ||
         throw(DimensionMismatch("expected a 2×2 tensor and a 2-vector"))
     return [
-        I[1, 1] + d[1]^2 * A I[1, 2] + d[1] * d[2] * A;
-        I[2, 1] + d[1] * d[2] * A I[2, 2] + d[2]^2 * A
+        I[1, 1] + d[2]^2 * A I[1, 2] + d[1] * d[2] * A;
+        I[2, 1] + d[1] * d[2] * A I[2, 2] + d[1]^2 * A
     ]
 end
 
