@@ -6,6 +6,12 @@ Julia translation of the Matlab wing structural optimization toolbox.
 Original Matlab code: vsdsantos/wing-structural-optimization
 Migration: Matlab → Julia (see migration plan in repository root).
 
+Public geometric inputs use metres, material strength/modulus values use Pa,
+density uses kg/m³, and aerodynamic load inputs use N/m (lift) and N per unit
+span (pitching moment). Span coordinates increase outward from the root; lift
+is positive upward and pitching moment positive nose-up. Angle units are
+specified by each API (degrees for wing configuration, radians for transforms).
+
 ## Quick start
 ```julia
 using WingOpt
@@ -89,6 +95,11 @@ export
     InternalLoads,
     OptResult,
     FitData,
+
+    # Numerical utilities
+    trapz,
+    cumtrapz,
+    quadratic_roots,
 
     # Material
     material_properties,
